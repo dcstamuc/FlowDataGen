@@ -8,6 +8,7 @@
 # dcs.tamuc@gmail.com
 #
 # Tool to count entries in the IDS log (anomalous_suspicious.csv) for each priority case
+# by Caitlin S.
 #
 '''
 python flowcount.py -h

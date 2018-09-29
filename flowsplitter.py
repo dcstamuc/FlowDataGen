@@ -8,6 +8,7 @@
 # dcs.tamuc@gmail.com
 #
 # Tool to split the flow files in timed order (e.g. 5 second)
+# by Caitlin S.
 #
 '''
 python flowsplitter.py -h

@@ -8,6 +8,7 @@
 # dcs.tamuc@gmail.com
 #
 # Tool to combine the flow and classifier
+# by Caitlin S.
 #
 '''
 python flowlabelling.py -h
@@ -333,6 +334,8 @@ rstr = f1.readline()
 rstr = f1.readline()
 
 anomalCnt = 0
+cntanomclass = 0
+cntunsclass = 0
 
 f2 = open(csvFile, 'r')
 csvReader = csv.reader(f2)
@@ -383,16 +386,24 @@ while rstr:
 
     getCountAndSum(timemin, 0, 14, int(fieldsValue[5].strip()), 15, int(fieldsValue[6].strip()))
 
+    rclass = "normal"
+    if prior > 20:
+        rclass = "anomaly"
+        cntanomclass = cntanomclass + 1
+    elif prior > 0:
+        rclass = "unsure"
+        cntunsclass = cntunsclass + 1
+
     if cnt :
         labelStr = getLabel(taxo, timemin)
-        outStr = "%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,anomaly,%s,%s,%s,%s,%s" % (
+        outStr = "%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s" % (
         fieldsValue[0].strip(), fieldsValue[1].strip(), fieldsValue[2].strip(), fieldsValue[3].strip(),
         fieldsValue[4].strip(), fieldsValue[5].strip(), fieldsValue[6].strip(), fieldsValue[7].strip(),
         fieldsValue[8].strip(), fieldsValue[9].strip(), fieldsValue[10].strip(), fieldsValue[11].strip(),
         fieldsValue[12].strip(), fieldsValue[13].strip(), fieldsValue[14].strip(), fieldsValue[15].strip(),
         fieldsValue[16].strip(), fieldsValue[17].strip(), fieldsValue[18].strip(), fieldsValue[19].strip(),
         fieldsValue[20].strip(), fieldsValue[21].strip(), fieldsValue[22].strip(), fieldsValue[23].strip(), fieldsValue[24].strip(), 
-        taxo, labelStr, heuri, dist, detect)
+        rclass, taxo, labelStr, heuri, dist, detect)
         anomalCnt = anomalCnt + 1
 
         if(detect == 'suspicious') :
@@ -409,13 +420,13 @@ while rstr:
 
         getCount(timemin, 1)
     else:
-        outStr = "%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,normal" % (
+        outStr = "%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s" % (
         fieldsValue[0].strip(), fieldsValue[1].strip(), fieldsValue[2].strip(), fieldsValue[3].strip(),
         fieldsValue[4].strip(), fieldsValue[5].strip(), fieldsValue[6].strip(), fieldsValue[7].strip(),
         fieldsValue[8].strip(), fieldsValue[9].strip(), fieldsValue[10].strip(), fieldsValue[11].strip(),
         fieldsValue[12].strip(), fieldsValue[13].strip(), fieldsValue[14].strip(), fieldsValue[15].strip(),
         fieldsValue[16].strip(), fieldsValue[17].strip(), fieldsValue[18].strip(), fieldsValue[19].strip(),
-        fieldsValue[20].strip(), fieldsValue[21].strip(), fieldsValue[22].strip(), fieldsValue[23].strip(), fieldsValue[24].strip())
+        fieldsValue[20].strip(), fieldsValue[21].strip(), fieldsValue[22].strip(), fieldsValue[23].strip(), fieldsValue[24].strip(), "normal")
         cntNormal = cntNormal + 1
         cntNormalPacket = cntNormalPacket + int(fieldsValue[5].strip())
         cntNormalByte = cntNormalByte + int(fieldsValue[6].strip())
@@ -460,7 +471,8 @@ fileStatistics.close()
 print('finish : ' + str(datetime.now()))
 
 print('total Flow Conunt : %d, anormal count : %d' % (cntTotalFlow,anomalCnt))
-print('suspicious : %d, anomalous : %d, normal : %d' % (cntSuspicious,cntAnomalous,cntNormal))
+print('By detector, anomalous : %d, suspicious : %d, normal : %d' % (cntAnomalous,cntSuspicious,cntNormal))
+print('By class, anomaly : %d, unsure : %d, normal : %d' % (cntanomclass,cntunsclass,cntNormal))
 print('HTTP : %d, Multi Points : %d, Alpha : %d, IPv6 tunneling : %d, Port Scan : %d, Network Scan : %d, Dos : %d, Other : %d, Unknown : %d' % (cntHTTP,cntMultiPoint,cntAlpha,cntIPv6,cntPortScan,cntNetworkScan,cntDos,cntOther,cntUnknown))
 
 # Plotting

@@ -27,7 +27,7 @@ python flowlabelling.py -t 2018070101
 python flowlabelling.py -t 2018070101 --sec
 python flowlabelling.py -i ./2018070101_result.data
 python flowlabelling.py -i ./2018070101_result.data -o output5
-
+python flowlabelling.py -t 2018070101 --notypes
 
 '''
 import sys
@@ -45,13 +45,15 @@ flowFile = ""
 resultDir = ""
 csvFile = ""
 timesec=False
+notypes=False
 
 parser = argparse.ArgumentParser(description='Tool to combine the flow and classifier')
-parser.add_argument("-i", "--input", action="store", dest="inputfile", required=False, help="input file path. e.g. *_result.data")
-parser.add_argument("-c", "--classifier", action="store", dest="classifier", required=False, help="input classifier file path. e.g. *_anomalous_suspicious.csv")
-parser.add_argument("-o", "--output", action="store", dest="outputDir", required=False, help="output directory path")
-parser.add_argument("-t", "--time", action="store", dest="dateStr", required=False, help="datetime of the file. When used, -i and -o are ignored.")
-parser.add_argument("--sec", action="store_true", dest="timesec", required=False, help="flow times in seconds, rather than millisesconds. default False.")
+parser.add_argument("-i", "--input", action="store", dest="inputfile", required=False, help="Input file path. e.g. *_result.data")
+parser.add_argument("-c", "--classifier", action="store", dest="classifier", required=False, help="Input classifier file path. e.g. *_anomalous_suspicious.csv")
+parser.add_argument("-o", "--output", action="store", dest="outputDir", required=False, help="Output directory path")
+parser.add_argument("-t", "--time", action="store", dest="dateStr", required=False, help="Datetime of the file. When used, -i and -o are ignored.")
+parser.add_argument("--sec", action="store_true", dest="timesec", required=False, help="Flow times in seconds, rather than millisesconds. Default False.")
+parser.add_argument("--notypes", action="store_true", dest="notypes", required=False, help="Flag for input data without types fields 16 (sType) and 17 (dType). Default False.")
 
 #args = parser.parse_args([
 ##'-i', './2018070101_result.data',
@@ -74,7 +76,9 @@ if (args.dateStr):
     csvFile = "%s_anomalous_suspicious.csv" % (dateStr)
 if (args.timesec):
     timesec = True
-    
+if (args.notypes):
+    notypes = True
+
 if (len(dateStr) ==0):
     dateStr=str(datetime.now().strftime('%Y%m%d%H%M'))
 if (len(resultDir) ==0):
@@ -319,10 +323,16 @@ def writeStatistics(numsec, sec5):
 print('start : '+str(datetime.now()))
 
 f3=open(resultCsvFile, 'a')
-f3.write('sIP,dIP,sPort,dPort,proto,packets,bytes,flags,'
-         'sTime,durat,eTime,sen,in,out,nhIP,sType,dType,senClass,typeFlow,iType,'
-         'iCode,initialF,sessionF,attribut,appli,'
-         'class,taxonomy,label,heuristic,distance,nbDetectors')
+if (notypes):
+    f3.write('sIP,dIP,sPort,dPort,proto,packets,bytes,flags,'
+             'sTime,durat,eTime,sen,in,out,nhIP,senClass,typeFlow,iType,'
+             'iCode,initialF,sessionF,attribut,appli,'
+             'class,taxonomy,label,heuristic,distance,nbDetectors')
+else:
+    f3.write('sIP,dIP,sPort,dPort,proto,packets,bytes,flags,'
+             'sTime,durat,eTime,sen,in,out,nhIP,sType,dType,senClass,typeFlow,iType,'
+             'iCode,initialF,sessionF,attribut,appli,'
+             'class,taxonomy,label,heuristic,distance,nbDetectors')
 f3.write('\n')
 
 
@@ -396,14 +406,24 @@ while rstr:
 
     if cnt :
         labelStr = getLabel(taxo, timemin)
-        outStr = "%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s" % (
-        fieldsValue[0].strip(), fieldsValue[1].strip(), fieldsValue[2].strip(), fieldsValue[3].strip(),
-        fieldsValue[4].strip(), fieldsValue[5].strip(), fieldsValue[6].strip(), fieldsValue[7].strip(),
-        fieldsValue[8].strip(), fieldsValue[9].strip(), fieldsValue[10].strip(), fieldsValue[11].strip(),
-        fieldsValue[12].strip(), fieldsValue[13].strip(), fieldsValue[14].strip(), fieldsValue[15].strip(),
-        fieldsValue[16].strip(), fieldsValue[17].strip(), fieldsValue[18].strip(), fieldsValue[19].strip(),
-        fieldsValue[20].strip(), fieldsValue[21].strip(), fieldsValue[22].strip(), fieldsValue[23].strip(), fieldsValue[24].strip(), 
-        rclass, taxo, labelStr, heuri, dist, detect)
+        if (notypes):
+            outStr = "%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s" % (
+            fieldsValue[0].strip(), fieldsValue[1].strip(), fieldsValue[2].strip(), fieldsValue[3].strip(),
+            fieldsValue[4].strip(), fieldsValue[5].strip(), fieldsValue[6].strip(), fieldsValue[7].strip(),
+            fieldsValue[8].strip(), fieldsValue[9].strip(), fieldsValue[10].strip(), fieldsValue[11].strip(),
+            fieldsValue[12].strip(), fieldsValue[13].strip(), fieldsValue[14].strip(), fieldsValue[15].strip(),
+            fieldsValue[16].strip(), fieldsValue[17].strip(), fieldsValue[18].strip(), fieldsValue[19].strip(),
+            fieldsValue[20].strip(), fieldsValue[21].strip(), fieldsValue[22].strip(),  
+            rclass, taxo, labelStr, heuri, dist, detect)
+        else:
+            outStr = "%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s" % (
+            fieldsValue[0].strip(), fieldsValue[1].strip(), fieldsValue[2].strip(), fieldsValue[3].strip(),
+            fieldsValue[4].strip(), fieldsValue[5].strip(), fieldsValue[6].strip(), fieldsValue[7].strip(),
+            fieldsValue[8].strip(), fieldsValue[9].strip(), fieldsValue[10].strip(), fieldsValue[11].strip(),
+            fieldsValue[12].strip(), fieldsValue[13].strip(), fieldsValue[14].strip(), fieldsValue[15].strip(),
+            fieldsValue[16].strip(), fieldsValue[17].strip(), fieldsValue[18].strip(), fieldsValue[19].strip(),
+            fieldsValue[20].strip(), fieldsValue[21].strip(), fieldsValue[22].strip(), fieldsValue[23].strip(), fieldsValue[24].strip(), 
+            rclass, taxo, labelStr, heuri, dist, detect)
         anomalCnt = anomalCnt + 1
 
         if(detect == 'suspicious') :
@@ -420,13 +440,22 @@ while rstr:
 
         getCount(timemin, 1)
     else:
-        outStr = "%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s" % (
-        fieldsValue[0].strip(), fieldsValue[1].strip(), fieldsValue[2].strip(), fieldsValue[3].strip(),
-        fieldsValue[4].strip(), fieldsValue[5].strip(), fieldsValue[6].strip(), fieldsValue[7].strip(),
-        fieldsValue[8].strip(), fieldsValue[9].strip(), fieldsValue[10].strip(), fieldsValue[11].strip(),
-        fieldsValue[12].strip(), fieldsValue[13].strip(), fieldsValue[14].strip(), fieldsValue[15].strip(),
-        fieldsValue[16].strip(), fieldsValue[17].strip(), fieldsValue[18].strip(), fieldsValue[19].strip(),
-        fieldsValue[20].strip(), fieldsValue[21].strip(), fieldsValue[22].strip(), fieldsValue[23].strip(), fieldsValue[24].strip(), "normal")
+        if (notypes):
+            outStr = "%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s" % (
+            fieldsValue[0].strip(), fieldsValue[1].strip(), fieldsValue[2].strip(), fieldsValue[3].strip(),
+            fieldsValue[4].strip(), fieldsValue[5].strip(), fieldsValue[6].strip(), fieldsValue[7].strip(),
+            fieldsValue[8].strip(), fieldsValue[9].strip(), fieldsValue[10].strip(), fieldsValue[11].strip(),
+            fieldsValue[12].strip(), fieldsValue[13].strip(), fieldsValue[14].strip(), fieldsValue[15].strip(),
+            fieldsValue[16].strip(), fieldsValue[17].strip(), fieldsValue[18].strip(), fieldsValue[19].strip(),
+            fieldsValue[20].strip(), fieldsValue[21].strip(), fieldsValue[22].strip(), "normal")
+        else:
+            outStr = "%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s,%s" % (
+            fieldsValue[0].strip(), fieldsValue[1].strip(), fieldsValue[2].strip(), fieldsValue[3].strip(),
+            fieldsValue[4].strip(), fieldsValue[5].strip(), fieldsValue[6].strip(), fieldsValue[7].strip(),
+            fieldsValue[8].strip(), fieldsValue[9].strip(), fieldsValue[10].strip(), fieldsValue[11].strip(),
+            fieldsValue[12].strip(), fieldsValue[13].strip(), fieldsValue[14].strip(), fieldsValue[15].strip(),
+            fieldsValue[16].strip(), fieldsValue[17].strip(), fieldsValue[18].strip(), fieldsValue[19].strip(),
+            fieldsValue[20].strip(), fieldsValue[21].strip(), fieldsValue[22].strip(), fieldsValue[23].strip(), fieldsValue[24].strip(), "normal")
         cntNormal = cntNormal + 1
         cntNormalPacket = cntNormalPacket + int(fieldsValue[5].strip())
         cntNormalByte = cntNormalByte + int(fieldsValue[6].strip())
